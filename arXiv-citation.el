@@ -27,8 +27,9 @@
 
 ;;; Commentary:
 
-;; Generate citation data for PDF files from the arXiv.  Additionally,
-;; download and open the current elfeed[1] entry.
+;; Generate citation data for PDF files from the arXiv.
+;; Additionally,download preprints to a specified directory and open
+;; them.  Includes elfeed[1] support.
 ;;
 ;; The high-level overview is:
 ;;
