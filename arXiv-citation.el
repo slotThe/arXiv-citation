@@ -32,17 +32,20 @@
 ;;
 ;; The high-level overview is:
 ;;
-;;   + `arXiv-citation-gui': Slurp an arXiv link from the primary
-;;     selection or the clipboard and insert the corresponding citation
-;;     into every file specified in `arXiv-citation-bibtex-files' (NOTE:
-;;     this is `nil' by default!).  This uses `gui-get-selection' and is
-;;     thus dependent on X11.
+;;  + `arXiv-citation-gui': Slurp an arXiv link from the primary
+;;    selection or the clipboard and insert the corresponding citation
+;;    into every file specified in `arXiv-citation-bibtex-files' (NOTE:
+;;    this is `nil' by default!).  This uses `gui-get-selection' and is
+;;    thus dependent on X11.
 ;;
-;;  + `arXiv-citation-elfeed': Elfeed integration.  Invoking this
-;;    function when viewing an arXiv article (i.e., one is in
-;;    `elfeed-show-mode') downloads it to `arXiv-citation-library' with
-;;    name "author1-author2-...authorn_title-sep-by-dashes.pdf" and
-;;    opens it with `arXiv-citation-open-pdf-function'.
+;;  + `arXiv-citation-download-and-open': Invoking this function with an
+;;    arXiv url downloads it to `arXiv-citation-library' with name
+;;    "author1-author2-...authorn_title-sep-by-dashes.pdf" and opens it
+;;    with `arXiv-citation-open-pdf-function'.
+;;
+;;  + `arXiv-citation-elfeed': Elfeed integration.  This works much like
+;;    `arXiv-citation-download-and-open', but uses the currently viewed
+;;    elfeed item instead of any X selections.
 ;;
 ;; [1]: https://github.com/skeeto/elfeed
 
@@ -241,7 +244,16 @@ Insert the new entry into all files listed in the variable
           ((s-prefix? "http" clipboard) (arXiv-citation clipboard)))))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-;; Elfeed integration
+;; Downloading papers
+
+;;;###autoload
+(defun arXiv-citation-download-and-open (url)
+  "Download and open an arXiv PDF from URL."
+  (let* ((link (arXiv-citation-pdf-link url))
+         (file (arXiv-citation-pdf-name (arXiv-citation-get-details link))))
+    ;; Integer as third arg: ask for confirmation before overwriting; lol.
+    (url-copy-file link file 42)
+    (funcall arXiv-citation-open-pdf-function file)))
 
 ;;;###autoload
 (defun arXiv-citation-elfeed ()
@@ -249,11 +261,7 @@ Insert the new entry into all files listed in the variable
 Fetch a paper from the arXiv and open it in zathura."
   (interactive)
   (require 'elfeed)
-  (let* ((link (arXiv-citation-pdf-link (elfeed-entry-link elfeed-show-entry)))
-         (file (arXiv-citation-pdf-name (arXiv-citation-get-details link))))
-    ;; Integer as third arg: ask for confirmation before overwriting; lol.
-    (url-copy-file link file 42)
-    (funcall arXiv-citation-open-pdf-function file)))
+  (arXiv-citation-download-and-open (elfeed-entry-link elfeed-show-entry)))
 
 (provide 'arXiv-citation)
 ;;; arXiv-citation.el ends here
