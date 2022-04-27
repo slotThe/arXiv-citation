@@ -198,7 +198,7 @@ data if applicable (i.e., an arXiv url)."
   "Extract an arXiv citation from URL."
   (let* ((info         (arXiv-citation-get-details url))
          (first-author (car (plist-get info :lastnames)))
-         (authors      (mapconcat #'identity (plist-get info :authors) ", "))
+         (authors      (mapconcat #'identity (plist-get info :authors) " and "))
          (year         (plist-get info :year))
          (id           (plist-get info :id))
          (title        (plist-get info :title))
