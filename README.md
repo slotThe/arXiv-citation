@@ -4,6 +4,44 @@ Generate citation data for PDF files from the arXiv.  Additionally,
 download preprints to a specified directory and open them.  Includes
 [elfeed] support.
 
+## Installation
+
+Copy `arXiv-citation.el` into a directory within your `load-path` and
+require it.  For example, assuming that this file was placed within the
+`~/.config/emacs/elisp` directory:
+
+``` emacs-lisp
+(add-to-list 'load-path "~/.config/emacs/elisp/")
+(require 'arXiv-citation)
+```
+
+If you use [use-package], you can express the above as
+
+``` emacs-lisp
+(use-package arXiv-citation
+  :load-path "~/.config/emacs/elisp/")
+```
+
+You will need to customise at least `arXiv-citation-bibtex-files` if you
+want to use any function that adds citations and
+`arXiv-citation-library` to download files to an appropriate directory.
+For example:
+
+``` emacs-lisp
+(use-package arXiv-citation
+  :load-path "~/.config/emacs/elisp/"
+  :commands (arXiv-citation-elfeed arXiv-citation-gui)
+  :custom
+  (arXiv-citation-library "~/library")
+  (arXiv-citation-bibtex-files
+   '("~/.tex/bibliography.bib"
+     "~/projects/super-secret-project/main.bib")))
+```
+
+[use-package]: https://github.com/jwiegley/use-package
+
+## Features
+
 The high-level overview is:
 
  + `arXiv-citation-gui`: Slurp an arXiv link from the primary selection
