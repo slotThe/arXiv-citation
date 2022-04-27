@@ -73,7 +73,11 @@ I.e., the place where all files should be downloaded to.")
 
 (defun arXiv-citation-arXiv-id (url)
   "Get the arXiv id of URL."
-  (caddr (s-match "arxiv.org/\\(pdf\\|abs\\)/\\([0-9.]*\\)" url)))
+  (caddr (if (s-contains? "math/" url)
+             ;; Old arXiv IDs: math/<number>
+             (s-match "arxiv.org/\\(pdf\\|abs\\)/\\(math/[0-9.]*\\)" url)
+           ;; New arXiv IDs: YYMM.<number>
+           (s-match "arxiv.org/\\(pdf\\|abs\\)/\\([0-9.]*\\)" url))))
 
 (defun arXiv-citation-pdf-link (url)
   "Construct the PDF URL from an ordinary arXiv one."
