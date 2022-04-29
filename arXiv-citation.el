@@ -142,13 +142,13 @@ Returns a plist of with keywords `:id', `:authors', `:title',
              (title (s-replace "\n" "" (cadr (alist-get 'title entry))))
              (authors (->> entry
                            (--filter (string= (car it) 'author))
-                           (--map (nth 2 (nth 2 it)))
+                           (-map  (-compose #'caddr #'caddr))
                            (--map (s-split " " it))
                            (--map (apply 'concat (-last-item it) ", " (-butlast it)))))
              (year (seq-take (cadr (alist-get 'published entry)) 4))
              (categories (->> entry
                               (--filter (string= (car it) 'category))
-                              (--map (alist-get 'term (nth 1 it))))))
+                              (--map (alist-get 'term (cadr it))))))
         (unless (string= title "Error")
           (list :id arXiv-id
                 :authors authors
