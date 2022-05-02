@@ -73,15 +73,17 @@ I.e., the place where all files should be downloaded to.")
 
 (defun arXiv-citation-arXiv-id (url)
   "Get the arXiv id of URL."
-  (caddr (if (s-contains? "math/" url)
-             ;; Old arXiv IDs: math/<number>
-             (s-match "arxiv.org/\\(pdf\\|abs\\)/\\(math/[0-9.]*\\)" url)
-           ;; New arXiv IDs: YYMM.<number>
-           (s-match "arxiv.org/\\(pdf\\|abs\\)/\\([0-9.]*\\)" url))))
+  (->> (if-let (old-id (s-match "arxiv.org/\\(pdf\\|abs\\)/\\([a-z\-]+/[0-9.]*\\)" url))
+           old-id
+         (s-match "arxiv.org/\\(pdf\\|abs\\)/\\([0-9.]*\\)" url)) ; New ID: YYYY.<number>
+       caddr
+       (s-chop-suffix ".")))
 
 (defun arXiv-citation-pdf-link (url)
   "Construct the PDF URL from an ordinary arXiv one."
-  (concat (s-replace "/abs/" "/pdf/" url) ".pdf"))
+  (if (s-contains? ".pdf" url)
+      url
+    (concat (s-replace "/abs/" "/pdf/" url) ".pdf")))
 
 (defun arXiv-citation-parse (method)
   "Parse the current buffer as either html or xml.
@@ -130,7 +132,7 @@ than I ever could."
   "Get some important details of an arXiv PDF.
 LINK is a normal arXiv link of the form
 
-    https://arxiv.org/abs/<arXiv-id>
+    [https://]arxiv.org/{abs,pdf}/<arXiv-id>[.pdf]
 
 Returns a plist of with keywords `:id', `:authors', `:title',
 `:year', and `:categories'."
