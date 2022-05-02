@@ -48,7 +48,8 @@ The high-level overview is:
    or the clipboard and insert the corresponding citation into every
    file specified in `arXiv-citation-bibtex-files` (NOTE: this is `nil`
    by default!).  This uses `gui-get-selection` and is thus dependent on
-   X11.
+   X11.  Below is a showcase of invoking this function via a global
+   keybinding, instead of inside Emacs itself.
 
    ![](https://user-images.githubusercontent.com/50166980/165585713-b798bbba-c5d9-4611-8a7c-b89fec898cf2.gif)
 
