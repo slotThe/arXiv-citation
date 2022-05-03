@@ -65,7 +65,7 @@
   "Path to the library.
 I.e., the place where all files should be downloaded to.")
 
-(defcustom arXiv-citation-open-pdf-function 'browse-url-xdg-open
+(defcustom arXiv-citation-open-pdf-function #'browse-url-xdg-open
   "Function with which to open PDF files.")
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
@@ -260,7 +260,7 @@ Insert the new entry into all files listed in the variable
          (file (arXiv-citation-pdf-name (arXiv-citation-get-details link))))
     ;; Integer as third arg: ask for confirmation before overwriting; lol.
     (url-copy-file link file 42)
-    (funcall arXiv-citation-open-pdf-function file)))
+    (funcall arXiv-citation-open-pdf-function (expand-file-name file))))
 
 ;;;###autoload
 (defun arXiv-citation-elfeed ()
