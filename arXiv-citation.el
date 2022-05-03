@@ -51,7 +51,18 @@
 ;; Refer to the README on the homepage for more information and visual
 ;; demonstrations.
 ;;
+;; An example configuration, using use-package[2], may look like
+;;
+;;     (use-package arXiv-citation
+;;       :commands (arXiv-citation-elfeed arXiv-citation-gui)
+;;       :custom
+;;       (arXiv-citation-library "~/library")
+;;       (arXiv-citation-bibtex-files
+;;        '("~/.tex/bibliography.bib"
+;;          "~/projects/super-secret-project/main.bib")))
+;;
 ;; [1]: https://github.com/skeeto/elfeed
+;; [2]: https://github.com/jwiegley/use-package
 
 ;;; Code:
 
@@ -214,12 +225,12 @@ data if applicable (i.e., an arXiv url)."
 
 (defun arXiv-citation-get-arXiv-citation (url)
   "Extract an arXiv citation from URL."
-  (let* ((info         (arXiv-citation-get-details url))
-         (authors      (mapconcat #'identity (plist-get info :authors) " and "))
-         (year         (plist-get info :year))
-         (id           (plist-get info :id))
-         (title        (plist-get info :title))
-         (cats         (plist-get info :categories)))
+  (let* ((info    (arXiv-citation-get-details url))
+         (authors (mapconcat #'identity (plist-get info :authors) " and "))
+         (year    (plist-get info :year))
+         (id      (plist-get info :id))
+         (title   (plist-get info :title))
+         (cats    (plist-get info :categories)))
     (cl-flet ((mk-citation (key)
                 (concat "@Article{" (or key "") ",\n"
                         " author        = {" authors "},\n"
