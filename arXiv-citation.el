@@ -48,6 +48,9 @@
 ;;    `arXiv-citation-download-and-open', but uses the currently viewed
 ;;    elfeed item instead of any X selections.
 ;;
+;; Refer to the README on the homepage for more information and visual
+;; demonstrations.
+;;
 ;; [1]: https://github.com/skeeto/elfeed
 
 ;;; Code:
@@ -104,9 +107,8 @@ INFO is information as given by `arXiv-citation-get-details'.
 The output name is of the following form:
 
     author1-author2-...authorn_title-sep-by-dashes.pdf."
-  (cl-flet ((take-lastnames (n)
-              (seq-take-while (lambda (c) (not (equal c ?,)))
-                              n)))
+  (cl-flet ((take-lastnames (names)
+              (seq-take-while (lambda (c) (not (equal c ?,))) names)))
     (format "%s/%s_%s.pdf"
             arXiv-citation-library
             (mapconcat (-compose #'downcase #'take-lastnames)
@@ -146,7 +148,7 @@ Returns a plist of with keywords `:id', `:authors', `:title',
                            (--filter (string= (car it) 'author))
                            (-map  (-compose #'caddr #'caddr))
                            (--map (s-split " " it))
-                           (--map (apply 'concat (-last-item it) ", " (-butlast it)))))
+                           (--map (apply #'concat (-last-item it) ", " (-butlast it)))))
              (year (seq-take (cadr (alist-get 'published entry)) 4))
              (categories (->> entry
                               (--filter (string= (car it) 'category))
@@ -194,8 +196,8 @@ data if applicable (i.e., an arXiv url)."
       ;; Insert readable name.
       (goto-char 0)
       (search-forward "{")
-      (zap-up-to-char 1 ?,)             ; @Article{,
-      (insert (arXiv-citation-generate-autokey))    ; @Article{name,
+      (zap-up-to-char 1 ?,)                      ; @Article{,
+      (insert (arXiv-citation-generate-autokey)) ; @Article{name,
       ;; Align.
       (align-regexp (point-min) (point-max) "\\(\\s-*\\) =")
       (buffer-string))))
