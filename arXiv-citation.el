@@ -61,15 +61,25 @@
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; Custom Variables
 
+(defgroup arXiv-citation nil
+  "Utility functions for dealing with arXiv papers."
+  :group 'applications)
+
 (defcustom arXiv-citation-bibtex-files nil
-  "List of files to insert bibtex information into.")
+  "List of files to insert bibtex information into."
+  :type '(repeat string)
+  :group 'arXiv-citation)
 
 (defcustom arXiv-citation-library user-emacs-directory
   "Path to the library.
-I.e., the place where all files should be downloaded to.")
+I.e., the place where all files should be downloaded to."
+  :type 'string
+  :group 'arXiv-citation)
 
 (defcustom arXiv-citation-open-pdf-function #'browse-url-xdg-open
-  "Function with which to open PDF files.")
+  "Function with which to open PDF files."
+  :type 'function
+  :group 'arXiv-citation)
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; Helpers
@@ -205,7 +215,6 @@ data if applicable (i.e., an arXiv url)."
 (defun arXiv-citation-get-arXiv-citation (url)
   "Extract an arXiv citation from URL."
   (let* ((info         (arXiv-citation-get-details url))
-         (first-author (car (plist-get info :lastnames)))
          (authors      (mapconcat #'identity (plist-get info :authors) " and "))
          (year         (plist-get info :year))
          (id           (plist-get info :id))
