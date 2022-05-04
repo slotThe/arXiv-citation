@@ -5,7 +5,7 @@
 ;; Author: Tony Zorman <soliditsallgood@mailbox.org>
 ;; Keywords: convenience
 ;; Version: 0.1
-;; Package-Requires: ((emacs "25.1"))
+;; Package-Requires: ((emacs "25.1") (dash "2.19.1") (s "1.12.0"))
 ;; Homepage: https://gitlab.com/slotThe/arxiv-citation
 
 ;; This file is NOT part of GNU Emacs.
