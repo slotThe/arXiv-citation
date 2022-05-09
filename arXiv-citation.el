@@ -166,18 +166,18 @@ Returns a plist of with keywords `:id', `:authors', `:title',
       (let* ((xml (arXiv-citation-parse :xml))
              (entry (alist-get 'entry xml))
              (title (s-replace "\n" "" (cadr (alist-get 'title entry))))
-             (authors (->> entry
-                           (--filter (string= (car it) 'author))
-                           (-map  (-compose #'caddr #'caddr))
-                           (--map (s-split " " it))
-                           (--map (apply #'concat (-last-item it) ", " (-butlast it)))))
+             (authors_ (->> entry
+                            (--filter (string= (car it) 'author))
+                            (-map (-compose #'caddr #'caddr))
+                            (--map (s-split " " it))
+                            (--map (apply #'concat (-last-item it) ", " (-butlast it)))))
              (year (seq-take (cadr (alist-get 'published entry)) 4))
              (categories (->> entry
                               (--filter (string= (car it) 'category))
                               (--map (alist-get 'term (cadr it))))))
         (unless (string= title "Error")
           (list :id arXiv-id
-                :authors authors
+                :authors authors_
                 :title title
                 :year year
                 :categories categories))))))
@@ -226,15 +226,15 @@ data if applicable (i.e., an arXiv url)."
 
 (defun arXiv-citation-get-arXiv-citation (url)
   "Extract an arXiv citation from URL."
-  (let* ((info    (arXiv-citation-get-details url))
-         (authors (mapconcat #'identity (plist-get info :authors) " and "))
-         (year    (plist-get info :year))
-         (id      (plist-get info :id))
-         (title   (plist-get info :title))
-         (cats    (plist-get info :categories)))
+  (let* ((info     (arXiv-citation-get-details url))
+         (authors_ (mapconcat #'identity (plist-get info :authors) " and "))
+         (year     (plist-get info :year))
+         (id       (plist-get info :id))
+         (title    (plist-get info :title))
+         (cats     (plist-get info :categories)))
     (cl-flet ((mk-citation (key)
                 (concat "@Article{" (or key "") ",\n"
-                        " author        = {" authors "},\n"
+                        " author        = {" authors_ "},\n"
                         " journal       = {arXiv e-prints},\n"
                         " title         = {" title "},\n"
                         " year          = {" year "},\n"
