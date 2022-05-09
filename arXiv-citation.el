@@ -66,6 +66,7 @@
 
 ;;; Code:
 
+(require 'bibtex)
 (require 'dash)
 (require 's)
 
@@ -283,6 +284,10 @@ Insert the new entry into all files listed in the variable
     ;; Integer as third arg: ask for confirmation before overwriting; lol.
     (url-copy-file link file 42)
     (funcall arXiv-citation-open-pdf-function (expand-file-name file))))
+
+;; Make the byte compiler happy.
+(defvar elfeed-show-entry)
+(declare-function elfeed-entry-link "elfeed" (cl-x))
 
 ;;;###autoload
 (defun arXiv-citation-elfeed ()
