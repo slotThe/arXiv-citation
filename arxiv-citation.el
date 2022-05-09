@@ -1,4 +1,4 @@
-;;; arXiv-citation.el --- Utility functions for dealing with arXiv papers -*- lexical-binding: t; -*-
+;;; arxiv-citation.el --- Utility functions for dealing with arXiv papers -*- lexical-binding: t; -*-
 
 ;; Copyright (C) 2022  Tony Zorman
 ;;
@@ -6,7 +6,7 @@
 ;; Keywords: convenience
 ;; Version: 0.1
 ;; Package-Requires: ((emacs "25.1") (dash "2.19.1") (s "1.12.0"))
-;; Homepage: https://gitlab.com/slotThe/arxiv-citation
+;; Homepage: https://gitlab.com/slotThe/arXiv-citation
 
 ;; This file is NOT part of GNU Emacs.
 
@@ -33,19 +33,19 @@
 ;;
 ;; The high-level overview is:
 ;;
-;;  + `arXiv-citation-gui': Slurp an arXiv link from the primary
+;;  + `arxiv-citation-gui': Slurp an arXiv link from the primary
 ;;    selection or the clipboard and insert the corresponding citation
-;;    into every file specified in `arXiv-citation-bibtex-files' (NOTE:
+;;    into every file specified in `arxiv-citation-bibtex-files' (NOTE:
 ;;    this is `nil' by default!).  This uses `gui-get-selection' and is
 ;;    thus dependent on X11.
 ;;
-;;  + `arXiv-citation-download-and-open': Invoking this function with an
-;;    arXiv url downloads it to `arXiv-citation-library' with name
+;;  + `arxiv-citation-download-and-open': Invoking this function with an
+;;    arXiv url downloads it to `arxiv-citation-library' with name
 ;;    "author1-author2-...authorn_title-sep-by-dashes.pdf" and opens it
-;;    with `arXiv-citation-open-pdf-function'.
+;;    with `arxiv-citation-open-pdf-function'.
 ;;
-;;  + `arXiv-citation-elfeed': Elfeed integration.  This works much like
-;;    `arXiv-citation-download-and-open', but uses the currently viewed
+;;  + `arxiv-citation-elfeed': Elfeed integration.  This works much like
+;;    `arxiv-citation-download-and-open', but uses the currently viewed
 ;;    elfeed item instead of any X selections.
 ;;
 ;; Refer to the README on the homepage for more information and visual
@@ -53,11 +53,11 @@
 ;;
 ;; An example configuration, using use-package[2], may look like
 ;;
-;;     (use-package arXiv-citation
-;;       :commands (arXiv-citation-elfeed arXiv-citation-gui)
+;;     (use-package arxiv-citation
+;;       :commands (arxiv-citation-elfeed arxiv-citation-gui)
 ;;       :custom
-;;       (arXiv-citation-library "~/library")
-;;       (arXiv-citation-bibtex-files
+;;       (arxiv-citation-library "~/library")
+;;       (arxiv-citation-bibtex-files
 ;;        '("~/.tex/bibliography.bib"
 ;;          "~/projects/super-secret-project/main.bib")))
 ;;
@@ -73,30 +73,30 @@
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; Custom Variables
 
-(defgroup arXiv-citation nil
+(defgroup arxiv-citation nil
   "Utility functions for dealing with arXiv papers."
   :group 'applications)
 
-(defcustom arXiv-citation-bibtex-files nil
+(defcustom arxiv-citation-bibtex-files nil
   "List of files to insert bibtex information into."
   :type '(repeat string)
-  :group 'arXiv-citation)
+  :group 'arxiv-citation)
 
-(defcustom arXiv-citation-library user-emacs-directory
+(defcustom arxiv-citation-library user-emacs-directory
   "Path to the library.
 I.e., the place where all files should be downloaded to."
   :type 'string
-  :group 'arXiv-citation)
+  :group 'arxiv-citation)
 
-(defcustom arXiv-citation-open-pdf-function #'browse-url-xdg-open
+(defcustom arxiv-citation-open-pdf-function #'browse-url-xdg-open
   "Function with which to open PDF files."
   :type 'function
-  :group 'arXiv-citation)
+  :group 'arxiv-citation)
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; Helpers
 
-(defun arXiv-citation-arXiv-id (url)
+(defun arxiv-citation-arXiv-id (url)
   "Get the arXiv id of URL."
   (->> (if-let (old-id (s-match "arxiv.org/\\(pdf\\|abs\\)/\\([a-z\-]+/[0-9.]*\\)" url))
            old-id
@@ -104,13 +104,13 @@ I.e., the place where all files should be downloaded to."
        caddr
        (s-chop-suffix ".")))
 
-(defun arXiv-citation-pdf-link (url)
+(defun arxiv-citation-pdf-link (url)
   "Construct the PDF URL from an ordinary arXiv one."
   (if (s-contains? ".pdf" url)
       url
     (concat (s-replace "/abs/" "/pdf/" url) ".pdf")))
 
-(defun arXiv-citation-parse (method)
+(defun arxiv-citation-parse (method)
   "Parse the current buffer as either html or xml.
 METHOD is a keyword; either `:html' or `:xml'."
   (pcase-let ((`(,parse-fun . ,start)
@@ -123,16 +123,16 @@ METHOD is a keyword; either `:html' or `:xml'."
                     (match-beginning 0))
              (point-max))))
 
-(defun arXiv-citation-pdf-name (info)
+(defun arxiv-citation-pdf-name (info)
   "Produce a standardised PDF name.
-INFO is information as given by `arXiv-citation-get-details'.
+INFO is information as given by `arxiv-citation-get-details'.
 The output name is of the following form:
 
     author1-author2-...authorn_title-sep-by-dashes.pdf."
   (cl-flet ((take-lastnames (names)
               (seq-take-while (lambda (c) (not (equal c ?,))) names)))
     (format "%s/%s_%s.pdf"
-            arXiv-citation-library
+            arxiv-citation-library
             (mapconcat (-compose #'downcase #'take-lastnames)
                        (plist-get info :authors)
                        "-")
@@ -142,7 +142,7 @@ The output name is of the following form:
                                   ("$" . "") ("," . "")
                                   ("\\" . "")))))))
 
-(defun arXiv-citation-generate-autokey ()
+(defun arxiv-citation-generate-autokey ()
   "Generate a key for a bibtex entry in the current buffer.
 Defers to `bibtex-generate-autokey' for the actual generation
 work—thankfully other people have already solved this much better
@@ -152,7 +152,7 @@ than I ever could."
               bibtex-autokey-titleword-separator "-")
   (bibtex-generate-autokey))
 
-(defun arXiv-citation-get-details (link)
+(defun arxiv-citation-get-details (link)
   "Get some important details of an arXiv PDF.
 LINK is a normal arXiv link of the form
 
@@ -160,10 +160,10 @@ LINK is a normal arXiv link of the form
 
 Returns a plist of with keywords `:id', `:authors', `:title',
 `:year', and `:categories'."
-  (let* ((arXiv-id (arXiv-citation-arXiv-id link))
+  (let* ((arXiv-id (arxiv-citation-arXiv-id link))
          (url (format "http://export.arxiv.org/api/query?id_list=%s" arXiv-id)))
     (with-current-buffer (url-retrieve-synchronously url t t)
-      (let* ((xml (arXiv-citation-parse :xml))
+      (let* ((xml (arxiv-citation-parse :xml))
              (entry (alist-get 'entry xml))
              (title (s-replace "\n" "" (cadr (alist-get 'title entry))))
              (authors_ (->> entry
@@ -185,28 +185,28 @@ Returns a plist of with keywords `:id', `:authors', `:title',
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; Citations
 
-(defun arXiv-citation-get-citation (url)
+(defun arxiv-citation-get-citation (url)
   "Return the citation corresponding to URL.
 URL can be either an arXiv or a zbmath url.  Try zbmath first; if
 the paper is not published yet, generate a citation from arXiv
 data if applicable (i.e., an arXiv url)."
   (let* ((zbmath "https://zbmath.org")
          (zbmath-url
-          (cond ((arXiv-citation-arXiv-id url)
+          (cond ((arxiv-citation-arXiv-id url)
                  (format "%s/?q=arXiv:%s" zbmath
-                         (arXiv-citation-arXiv-id (arXiv-citation-pdf-link url))))
+                         (arxiv-citation-arXiv-id (arxiv-citation-pdf-link url))))
                 ((s-prefix? zbmath url)
                  url))))
     (with-current-buffer (url-retrieve-synchronously zbmath-url t t)
-      (let* ((html (arXiv-citation-parse :html))
+      (let* ((html (arxiv-citation-parse :html))
              (id (cadr (s-match "Document Zbl \\([0-9.]*\\)"
                                 ;; Hahahahahahahahaha
                                 (caddr (cadddr (caddr html)))))))
         (if id
-            (arXiv-citation-get-zbmath-citation (concat zbmath "/bibtex/" id ".bib"))
-          (arXiv-citation-get-arXiv-citation url))))))
+            (arxiv-citation-get-zbmath-citation (concat zbmath "/bibtex/" id ".bib"))
+          (arxiv-citation-get-arxiv-citation url))))))
 
-(defun arXiv-citation-get-zbmath-citation (url)
+(defun arxiv-citation-get-zbmath-citation (url)
   "Obtain a zbmath citation from URL."
   (with-current-buffer (url-retrieve-synchronously url t t)
     (goto-char 0)
@@ -219,14 +219,14 @@ data if applicable (i.e., an arXiv url)."
       (goto-char 0)
       (search-forward "{")
       (zap-up-to-char 1 ?,)                      ; @Article{,
-      (insert (arXiv-citation-generate-autokey)) ; @Article{name,
+      (insert (arxiv-citation-generate-autokey)) ; @Article{name,
       ;; Align.
       (align-regexp (point-min) (point-max) "\\(\\s-*\\) =")
       (buffer-string))))
 
-(defun arXiv-citation-get-arXiv-citation (url)
+(defun arxiv-citation-get-arxiv-citation (url)
   "Extract an arXiv citation from URL."
-  (let* ((info     (arXiv-citation-get-details url))
+  (let* ((info     (arxiv-citation-get-details url))
          (authors_ (mapconcat #'identity (plist-get info :authors) " and "))
          (year     (plist-get info :year))
          (id       (plist-get info :id))
@@ -245,20 +245,20 @@ data if applicable (i.e., an arXiv url)."
                         "}")))
       (mk-citation (with-temp-buffer
                      (insert (mk-citation nil))
-                     (arXiv-citation-generate-autokey))))))
+                     (arxiv-citation-generate-autokey))))))
 
 ;;;###autoload
-(defun arXiv-citation (url)
+(defun arxiv-citation (url)
   "Create a citation from the given arXiv or zbmath URL.
 Insert the new entry into all files listed in the variable
-`arXiv-citation-bibtex-files'."
+`arxiv-citation-bibtex-files'."
   (interactive)
-  (let ((citation (arXiv-citation-get-citation url)))
-    (dolist (file arXiv-citation-bibtex-files)
+  (let ((citation (arxiv-citation-get-citation url)))
+    (dolist (file arxiv-citation-bibtex-files)
       (append-to-file (concat "\n" citation "\n") nil file))))
 
 ;;;###autoload
-(defun arXiv-citation-gui ()
+(defun arxiv-citation-gui ()
   "Create a citation from the current arXiv or zbmath link.
 \"Current\" means \"in the primary selection or the clipboard\"
 \(in that order\).  First, try to pull down citation information
@@ -266,36 +266,36 @@ from zbmath—in case the paper is already published. If not,
 gather the necessary details from the arXiv API if applicable.
 
 Insert the new entry into all files listed in the variable
-`arXiv-citation-bibtex-files'."
+`arxiv-citation-bibtex-files'."
   (interactive)
   (let ((primary (gui-get-primary-selection))
         (clipboard (gui-get-selection 'CLIPBOARD)))
-    (cond ((s-prefix? "http" primary)   (arXiv-citation primary))
-          ((s-prefix? "http" clipboard) (arXiv-citation clipboard)))))
+    (cond ((s-prefix? "http" primary)   (arxiv-citation primary))
+          ((s-prefix? "http" clipboard) (arxiv-citation clipboard)))))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; Downloading papers
 
 ;;;###autoload
-(defun arXiv-citation-download-and-open (url)
+(defun arxiv-citation-download-and-open (url)
   "Download and open an arXiv PDF from URL."
-  (let* ((link (arXiv-citation-pdf-link url))
-         (file (arXiv-citation-pdf-name (arXiv-citation-get-details link))))
+  (let* ((link (arxiv-citation-pdf-link url))
+         (file (arxiv-citation-pdf-name (arxiv-citation-get-details link))))
     ;; Integer as third arg: ask for confirmation before overwriting; lol.
     (url-copy-file link file 42)
-    (funcall arXiv-citation-open-pdf-function (expand-file-name file))))
+    (funcall arxiv-citation-open-pdf-function (expand-file-name file))))
 
 ;; Make the byte compiler happy.
 (defvar elfeed-show-entry)
 (declare-function elfeed-entry-link "elfeed" (cl-x))
 
 ;;;###autoload
-(defun arXiv-citation-elfeed ()
+(defun arxiv-citation-elfeed ()
   "When viewing a paper in elfeed, fetch and open it.
 Fetch a paper from the arXiv and open it in zathura."
   (interactive)
   (require 'elfeed)
-  (arXiv-citation-download-and-open (elfeed-entry-link elfeed-show-entry)))
+  (arxiv-citation-download-and-open (elfeed-entry-link elfeed-show-entry)))
 
-(provide 'arXiv-citation)
-;;; arXiv-citation.el ends here
+(provide 'arxiv-citation)
+;;; arxiv-citation.el ends here
