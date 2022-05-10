@@ -163,9 +163,12 @@ Returns a plist of with keywords `:id', `:authors', `:title',
   (let* ((arXiv-id (arxiv-citation-arXiv-id link))
          (url (format "http://export.arxiv.org/api/query?id_list=%s" arXiv-id)))
     (with-current-buffer (url-retrieve-synchronously url t t)
+      (setq case-fold-search nil)       ; Regexps should be case sensitive.
       (let* ((xml (arxiv-citation-parse :xml))
              (entry (alist-get 'entry xml))
-             (title (s-replace "\n" "" (cadr (alist-get 'title entry))))
+             (title (->> (cadr (alist-get 'title entry))
+                         (s-replace "\n" "")
+                         (s-replace-regexp "\\([A-Z]\\)" "{\\&}")))
              (authors_ (->> entry
                             (--filter (string= (car it) 'author))
                             (-map (-compose #'caddr #'caddr))
