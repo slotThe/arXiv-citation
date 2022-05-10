@@ -139,8 +139,8 @@ The output name is of the following form:
             (->> (plist-get info :title)
                  downcase
                  (s-replace-all '(("_" . "-") (" " . "-")
-                                  ("$" . "") ("," . "")
-                                  ("\\" . "")))))))
+                                  ("$" . "") ("," . "") ("\\" . "")
+                                  ("{" . "") ("}" . "")))))))
 
 (defun arxiv-citation-generate-autokey ()
   "Generate a key for a bibtex entry in the current buffer.
