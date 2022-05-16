@@ -4,42 +4,6 @@ Generate citation data for PDF files from the arXiv.  Additionally,
 download preprints to a specified directory and open them.  Includes
 [elfeed] support.
 
-## Installation
-
-Copy `arxiv-citation.el` into a directory within your `load-path` and
-require it.  For example, assuming that this file was placed within the
-`~/.config/emacs/elisp` directory:
-
-``` emacs-lisp
-(add-to-list 'load-path "~/.config/emacs/elisp/")
-(require 'arxiv-citation)
-```
-
-If you use [use-package], you can express the above as
-
-``` emacs-lisp
-(use-package arxiv-citation
-  :load-path "~/.config/emacs/elisp/")
-```
-
-You will need to customise at least `arxiv-citation-bibtex-files` if you
-want to use any function that adds citations and
-`arxiv-citation-library` to download files to an appropriate directory.
-For example:
-
-``` emacs-lisp
-(use-package arxiv-citation
-  :load-path "~/.config/emacs/elisp/"
-  :commands (arxiv-citation-elfeed arxiv-citation-gui)
-  :custom
-  (arxiv-citation-library "~/library")
-  (arxiv-citation-bibtex-files
-   '("~/.tex/bibliography.bib"
-     "~/projects/super-secret-project/main.bib")))
-```
-
-[use-package]: https://github.com/jwiegley/use-package
-
 ## Features
 
 The high-level overview is:
@@ -65,3 +29,49 @@ The high-level overview is:
    url to the paper.
 
 [1]: https://github.com/skeeto/elfeed
+
+## Installation
+
+### MELPA
+
+The package is on MELPA, so you can install it like any other package:
+
+        M-x package-install RET arxiv-citation RET
+
+### Manual
+
+Copy `arxiv-citation.el` into a directory within your `load-path` and
+require it.  For example, assuming that this file was placed within the
+`~/.config/emacs/elisp` directory:
+
+``` emacs-lisp
+(add-to-list 'load-path "~/.config/emacs/elisp/")
+(require 'arxiv-citation)
+```
+
+If you use [use-package], you can express the above as
+
+``` emacs-lisp
+(use-package arxiv-citation
+  :load-path "~/.config/emacs/elisp/")
+```
+
+## Configuration
+
+You will need to customise at least `arxiv-citation-bibtex-files` if you
+want to use any function that adds citations and
+`arxiv-citation-library` to download files to an appropriate directory.
+For example:
+
+``` emacs-lisp
+(use-package arxiv-citation
+  :load-path "~/.config/emacs/elisp/"
+  :commands (arxiv-citation-elfeed arxiv-citation-gui)
+  :custom
+  (arxiv-citation-library "~/library")
+  (arxiv-citation-bibtex-files
+   '("~/.tex/bibliography.bib"
+     "~/projects/super-secret-project/main.bib")))
+```
+
+[use-package]: https://github.com/jwiegley/use-package
