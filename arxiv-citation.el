@@ -93,6 +93,13 @@ I.e., the place where all files should be downloaded to."
   :type 'function
   :group 'arxiv-citation)
 
+(defcustom arxiv-citation-max-authors nil
+  "Maximum number of authors to show in the PDF title.
+If this is nil, show all authors instead."
+  :type '(choice (natnum :tag "Only show this many authors")
+                 (const :tag "Show all authors" nil))
+  :group 'arxiv-citation)
+
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; Helpers
 
@@ -128,24 +135,28 @@ METHOD is a keyword; either `:html' or `:xml'."
 INFO is information as given by `arxiv-citation-get-details'.
 The output name is of the following form:
 
-    author1-author2-...authorn_title-sep-by-dashes.pdf."
+    author₁-author₂-...authorₙ_title-separated-by-dashes.pdf."
   (cl-flet ((take-lastnames (names)
               (seq-take-while (lambda (c) (not (equal c ?,))) names)))
-    (format "%s/%s_%s.pdf"
-            arxiv-citation-library
-            (mapconcat (-compose #'downcase #'take-lastnames)
-                       (plist-get info :authors)
-                       "-")
-            (->> (plist-get info :title)
-                 downcase
-                 (s-replace-all '(("_" . "-") (" " . "-")
-                                  ("$" . "") ("," . "") ("\\" . "")
-                                  ("{" . "") ("}" . "")))
-                 ;; At least citar treats colons and question marks
-                 ;; special: https://github.com/bdarcus/citar/issues/599
-                 (s-split "\\(:\\|?\\|;\\)")
-                 car
-                 s-trim))))
+    (let* ((auths (mapconcat (-compose #'downcase #'take-lastnames)
+                             (-take (or arxiv-citation-max-authors
+                                        most-positive-fixnum)
+                                    (plist-get info :authors))
+                             "-"))
+           (title (->> (plist-get info :title)
+                       downcase
+                       (s-replace-all '(("_" . "-") (" " . "-")
+                                        ("$" . "") ("," . "") ("\\" . "")
+                                        ("{" . "") ("}" . "")))
+                       ;; At least citar treats these chars special:
+                       ;; https://github.com/bdarcus/citar/issues/599
+                       (s-split "\\(:\\|?\\|;\\)")
+                       car
+                       s-trim)))
+      (format "%s/%s%s.pdf"
+              arxiv-citation-library
+              (if (s-blank? auths) "" (concat auths "_"))
+              title))))
 
 (defun arxiv-citation-generate-autokey ()
   "Generate a key for a bibtex entry in the current buffer.
