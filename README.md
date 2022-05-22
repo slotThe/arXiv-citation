@@ -28,7 +28,7 @@ The high-level overview is:
    `arxiv-citation-elfeed`, but relies on X selections for getting the
    url to the paper.
 
-[1]: https://github.com/skeeto/elfeed
+[elfeed]: https://github.com/skeeto/elfeed
 
 ## Installation
 
