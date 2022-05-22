@@ -28,7 +28,7 @@
 ;;; Commentary:
 
 ;; Generate citation data for PDF files from the arXiv.
-;; Additionally,download preprints to a specified directory and open
+;; Additionally, download preprints to a specified directory and open
 ;; them.  Includes elfeed[1] support.
 ;;
 ;; The high-level overview is:
@@ -140,7 +140,12 @@ The output name is of the following form:
                  downcase
                  (s-replace-all '(("_" . "-") (" " . "-")
                                   ("$" . "") ("," . "") ("\\" . "")
-                                  ("{" . "") ("}" . "")))))))
+                                  ("{" . "") ("}" . "")))
+                 ;; At least citar treats colons and question marks
+                 ;; special: https://github.com/bdarcus/citar/issues/599
+                 (s-split "\\(:\\|?\\|;\\)")
+                 car
+                 s-trim))))
 
 (defun arxiv-citation-generate-autokey ()
   "Generate a key for a bibtex entry in the current buffer.
