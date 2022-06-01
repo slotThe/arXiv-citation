@@ -145,9 +145,10 @@ The output name is of the following form:
                              "-"))
            (title (->> (plist-get info :title)
                        downcase
-                       (s-replace-all '(("_" . "-") (" " . "-")
-                                        ("$" . "") ("," . "") ("\\" . "")
-                                        ("{" . "") ("}" . "")))
+                       (s-replace-all '(("_" . "-") (" " . "-") ("$" . "")
+                                        ("," . "") ("\\" . "") ("{" . "")
+                                        ("}" . "") ("(" . "") (")" . "")
+                                        ("[" . "") ("]" . "")))
                        ;; At least citar treats these chars special:
                        ;; https://github.com/bdarcus/citar/issues/599
                        (s-split "\\(:\\|?\\|;\\)")
