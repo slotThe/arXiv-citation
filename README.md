@@ -1,8 +1,12 @@
 # arXiv-citation
 
-Generate citation data for PDF files from the arXiv.  Additionally,
-download preprints to a specified directory and open them.  Includes
-[elfeed] support.
+Generate citation data for PDF files from the [arXiv] or from [zbmath].
+Additionally, download preprints to a specified directory and open them.
+Includes [elfeed] support.
+
+[arXiv]: https://arxiv.org/
+[elfeed]: https://github.com/skeeto/elfeed
+[zbmath]: https://zbmath.org/
 
 ## Features
 
@@ -27,8 +31,6 @@ The high-level overview is:
  + `arxiv-citation-download-and-open`: This works much like
    `arxiv-citation-elfeed`, but relies on X selections for getting the
    url to the paper.
-
-[elfeed]: https://github.com/skeeto/elfeed
 
 ## Installation
 
@@ -56,6 +58,8 @@ If you use [use-package], you can express the above as
   :load-path "~/.config/emacs/elisp/")
 ```
 
+[use-package]: https://github.com/jwiegley/use-package
+
 ## Configuration
 
 You will need to customise at least `arxiv-citation-bibtex-files` if you
@@ -65,7 +69,6 @@ For example:
 
 ``` emacs-lisp
 (use-package arxiv-citation
-  :load-path "~/.config/emacs/elisp/"
   :commands (arxiv-citation-elfeed arxiv-citation-gui)
   :custom
   (arxiv-citation-library "~/library")
@@ -73,5 +76,3 @@ For example:
    '("~/.tex/bibliography.bib"
      "~/projects/super-secret-project/main.bib")))
 ```
-
-[use-package]: https://github.com/jwiegley/use-package
