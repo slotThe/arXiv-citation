@@ -233,12 +233,14 @@ data if applicable (i.e., an arXiv url)."
     (let ((citation (buffer-substring (point) (point-max))))
       (erase-buffer)
       (insert citation)
-      ;; Insert readable name.
+      ;; Insert readable name
       (goto-char 0)
       (search-forward "{")
       (zap-up-to-char 1 ?,)                      ; @Article{,
       (insert (arxiv-citation-generate-autokey)) ; @Article{name,
-      ;; Align.
+      ;; Align
+      (setq-local indent-tabs-mode      nil
+                  align-default-spacing 5)
       (align-regexp (point-min) (point-max) "\\(\\s-*\\) =")
       (buffer-string))))
 
