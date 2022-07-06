@@ -145,7 +145,7 @@ The output name is of the following form:
                              "-"))
            (title (->> (plist-get info :title)
                        downcase
-                       (s-replace-regexp "[]$(),[\\{}]" "") ; just kill these
+                       (s-replace-regexp "[]$(),[\\{}']" "") ; just kill these
                        (s-replace-all '(("_" . "-") (" " . "-")))
                        ;; At least citar treats these chars special:
                        ;; https://github.com/bdarcus/citar/issues/599
