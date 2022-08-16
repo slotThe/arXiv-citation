@@ -301,8 +301,10 @@ Insert the new entry into all files listed in the variable
   "Download and open an arXiv PDF from URL."
   (let* ((link (arxiv-citation-pdf-link url))
          (file (arxiv-citation-pdf-name (arxiv-citation-get-details link))))
-    ;; Integer as third arg: ask for confirmation before overwriting; lol.
-    (url-copy-file link file 42)
+    (when (not (and noninteractive      ; batch-mode
+                    (file-exists-p file)))
+      ;; Integer as third arg: ask for confirmation before overwriting; lol.
+      (url-copy-file link file 42))
     (funcall arxiv-citation-open-pdf-function (expand-file-name file))))
 
 ;; Make the byte compiler happy.
