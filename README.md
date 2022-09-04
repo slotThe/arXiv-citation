@@ -32,6 +32,12 @@ The high-level overview is:
    `arxiv-citation-elfeed`, but relies on X selections for getting the
    url to the paper.
 
+A blog post that discusses the integration of `arxiv-citation` with
+[XMonad]—a tiling window manager—is available [here][xmonad-emacs].
+
+[xmonad-emacs]: https://tony-zorman.com/posts/2022-05-25-calling-emacs-from-xmonad.html
+[XMonad]: https://xmonad.org/
+
 ## Installation
 
 ### MELPA
