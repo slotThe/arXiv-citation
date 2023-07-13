@@ -100,6 +100,20 @@ If this is nil, show all authors instead."
                  (const :tag "Show all authors" nil))
   :group 'arxiv-citation)
 
+(defcustom arxiv-citation-overwrite-file nil
+  "Whether to overwrite an existing file in non-interactive mode.
+When downloading a file, and one of the same name already exists,
+then do the following:
+
+  - If the variable is nil (the default), ask for confirmation
+    whether to overwrite the file in interactive usage, and do
+    NOT overwrite the file on non-interactive (batch) mode.
+
+  - If the variable is t, always overwrite the file and do not
+    ask for confirmation, even in interactive usage."
+  :type 'boolean
+  :group 'arxiv-citation)
+
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; Helpers
 
@@ -301,10 +315,11 @@ Insert the new entry into all files listed in the variable
   "Download and open an arXiv PDF from URL."
   (let* ((link (arxiv-citation-pdf-link url))
          (file (arxiv-citation-pdf-name (arxiv-citation-get-details link))))
-    (when (not (and noninteractive      ; batch-mode
-                    (file-exists-p file)))
-      ;; Integer as third arg: ask for confirmation before overwriting; lol.
-      (url-copy-file link file 42))
+    (cond (arxiv-citation-overwrite-file
+           (url-copy-file link file t))
+          ((and (file-exists-p file) (not noninteractive))
+           ;; Integer as third arg: ask for confirmation before overwriting; lol.
+           (ignore-errors (url-copy-file link file 42))))
     (funcall arxiv-citation-open-pdf-function (expand-file-name file))))
 
 ;; Make the byte compiler happy.
