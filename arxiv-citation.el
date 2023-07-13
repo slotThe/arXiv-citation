@@ -1,6 +1,6 @@
 ;;; arxiv-citation.el --- Utility functions for dealing with arXiv papers -*- lexical-binding: t; -*-
 
-;; Copyright (C) 2022  Tony Zorman
+;; Copyright (C) 2022–2023  Tony Zorman
 ;;
 ;; Author: Tony Zorman <soliditsallgood@mailbox.org>
 ;; Keywords: convenience
