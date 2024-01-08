@@ -152,24 +152,25 @@ The output name is of the following form:
     author₁-author₂-...authorₙ_title-separated-by-dashes.pdf."
   (cl-flet ((take-lastnames (names)
               (seq-take-while (lambda (c) (not (equal c ?,))) names)))
-    (let* ((auths (mapconcat (-compose #'downcase #'take-lastnames)
-                             (-take (or arxiv-citation-max-authors
-                                        most-positive-fixnum)
-                                    (plist-get info :authors))
-                             "-"))
-           (title (->> (plist-get info :title)
-                       downcase
-                       (s-replace-regexp "[]$(),[\\{}']" "") ; just kill these
-                       (s-replace-all '(("_" . "-") (" " . "-")))
-                       ;; At least citar treats these chars special:
-                       ;; https://github.com/bdarcus/citar/issues/599
-                       (s-split "\\(:\\|?\\|;\\)")
-                       car
-                       s-trim)))
-      (format "%s/%s%s.pdf"
-              arxiv-citation-library
-              (if (s-blank? auths) "" (concat auths "_"))
-              title))))
+    (let-alist info
+      (let* ((auths (mapconcat (-compose #'downcase #'take-lastnames)
+                               (-take (or arxiv-citation-max-authors
+                                          most-positive-fixnum)
+                                      .authors)
+                               "-"))
+             (title (->> .title
+                         downcase
+                         (s-replace-regexp "[]$(),[\\{}']" "") ; just kill these
+                         (s-replace-all '(("_" . "-") (" " . "-")))
+                         ;; At least citar treats these chars special:
+                         ;; https://github.com/bdarcus/citar/issues/599
+                         (s-split "\\(:\\|?\\|;\\)")
+                         car
+                         s-trim)))
+        (format "%s/%s%s.pdf"
+                arxiv-citation-library
+                (if (s-blank? auths) "" (concat auths "_"))
+                title)))))
 
 (defun arxiv-citation-generate-autokey ()
   "Generate a key for a bibtex entry in the current buffer.
@@ -187,8 +188,8 @@ LINK is a normal arXiv link of the form
 
     [https://]arxiv.org/{abs,pdf}/<arXiv-id>[.pdf]
 
-Returns a plist of with keywords `:id', `:authors', `:title',
-`:year', and `:categories'."
+Returns an alist with keys `id', `authors', `title', `year', and
+`categories'."
   (let* ((arXiv-id (arxiv-citation-arXiv-id link))
          (url (format "http://export.arxiv.org/api/query?id_list=%s" arXiv-id)))
     (with-current-buffer (url-retrieve-synchronously url t t)
@@ -198,21 +199,18 @@ Returns a plist of with keywords `:id', `:authors', `:title',
              (title (->> (cadr (alist-get 'title entry))
                          (s-replace "\n" "")
                          (s-replace-regexp "\\([A-Z]\\)" "{\\&}")))
-             (authors_ (->> entry
-                            (--filter (string= (car it) 'author))
-                            (-map (-compose #'caddr #'caddr))
-                            (--map (s-split " " it))
-                            (--map (apply #'concat (-last-item it) ", " (-butlast it)))))
+             (authors (->> entry
+                           (--keep (-second-item (alist-get 'name it)))
+                           (--map (s-split " " it))
+                           (--map (apply #'concat (-last-item it) ", " (-butlast it)))))
              (year (seq-take (cadr (alist-get 'published entry)) 4))
-             (categories (->> entry
-                              (--filter (string= (car it) 'category))
-                              (--map (alist-get 'term (cadr it))))))
+             (categories (--keep (alist-get 'term (cadr it)) entry)))
         (unless (string= title "Error")
-          (list :id arXiv-id
-                :authors authors_
-                :title title
-                :year year
-                :categories categories))))))
+          `((id . ,arXiv-id)
+            (authors . ,authors)
+            (title . ,title)
+            (year . ,year)
+            (categories . ,categories)))))))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; Citations
@@ -260,26 +258,22 @@ data if applicable (i.e., an arXiv url)."
 
 (defun arxiv-citation-get-arxiv-citation (url)
   "Extract an arXiv citation from URL."
-  (let* ((info     (arxiv-citation-get-details url))
-         (authors_ (mapconcat #'identity (plist-get info :authors) " and "))
-         (year     (plist-get info :year))
-         (id       (plist-get info :id))
-         (title    (plist-get info :title))
-         (cats     (plist-get info :categories)))
-    (cl-flet ((mk-citation (key)
-                (concat "@Article{" (or key "") ",\n"
-                        " author        = {" authors_ "},\n"
-                        " journal       = {arXiv e-prints},\n"
-                        " title         = {" title "},\n"
-                        " year          = {" year "},\n"
-                        " eprint        = {" id "},\n"
-                        " eprintclass   = {" (car cats) "},\n"
-                        " eprinttype    = {arXiv},\n"
-                        " keywords      = {" (mapconcat #'identity cats ", ") "},\n"
-                        "}")))
-      (mk-citation (with-temp-buffer
-                     (insert (mk-citation nil))
-                     (arxiv-citation-generate-autokey))))))
+  (let-alist (arxiv-citation-get-details url)
+    (let ((authors (mapconcat #'identity .authors " and ")))
+      (cl-flet ((mk-citation (key)
+                  (concat "@Article{" (or key "") ",\n"
+                          " author        = {" authors "},\n"
+                          " journal       = {arXiv e-prints},\n"
+                          " title         = {" .title "},\n"
+                          " year          = {" .year "},\n"
+                          " eprint        = {" .id "},\n"
+                          " eprintclass   = {" (car .categories) "},\n"
+                          " eprinttype    = {arXiv},\n"
+                          " keywords      = {" (mapconcat #'identity .categories ", ") "},\n"
+                          "}")))
+        (mk-citation (with-temp-buffer
+                       (insert (mk-citation nil))
+                       (arxiv-citation-generate-autokey)))))))
 
 ;;;###autoload
 (defun arxiv-citation (url)
