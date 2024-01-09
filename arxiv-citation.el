@@ -223,7 +223,7 @@ data if applicable (i.e., an arXiv url)."
   (let* ((zbmath "https://zbmath.org")
          (zbmath-url
           (cond ((arxiv-citation-arXiv-id url)
-                 (format "%s/?q=arXiv:%s" zbmath
+                 (format "%s/?q=%s" zbmath ; Search in any field
                          (arxiv-citation-arXiv-id (arxiv-citation-pdf-link url))))
                 ((s-prefix? zbmath url)
                  url))))
